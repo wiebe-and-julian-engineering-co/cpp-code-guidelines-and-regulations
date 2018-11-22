@@ -1,7 +1,27 @@
-\documentclass[11pt]{article}
+\documentclass[12pt]{article}
 
 \usepackage[style=ieee]{biblatex}
 \addbibresource{main.bib}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\renewcommand*\familydefault{\sfdefault}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{\footnotesize Draft}
+\cfoot{}
+\rfoot{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand{\cppuntil}[1]{\footnotesize\textit{(until C++#1)}\normalsize}
+\newcommand{\cppsince}[1]{\footnotesize\textit{(since C++#1)}\normalsize}
 
 \title{
       C++ Code Guidelines and Regulations \\
@@ -31,13 +51,27 @@ is true.\\
 Because of the nature of being a superset of C, C++ has many close-to-the-
 hardware programming capabilities. These low-level capabilities must be handled
 with discipline and sanity. This document is used as a guide and reference for
-C++ programmers in Wiebe and Julian Engineering Co. to achieve sane and safe
+C++ programmers in \textit{Wiebe and Julian Engineering Co.} to achieve sane and safe
 C++ programs.\\
-Many aspects are evaluated in this document, included but not limited by:
-readability, maintainability, portability, efficiency and security.
-
+Many C++ programming aspects are evaluated in this document, included but not
+limited by: readability, maintainability, portability, efficiency and security.
+\newpage
 \section{C++ Code Guidelines and Regulations}
-Some reference to a book \cite{DUMMY:1}
+\subsection{Reading Guide}
+This section describes how the guides and regulations should be read and
+interpreted. There are a couple of keywords that denote the urgency of
+following a requirement. Such as:
+\bigbreak
+\textbf{Test:} Hello world
+\subsection{Credility}
+Thoughout this document, authors and books are referenced to support the
+underlying guideline, in order to maintain credibility.
+\subsubsection{C++ Versioning}
+This guide takes modern C++ as of C++17 into account for coding practices. But
+some platforms may not have any compilers with support for the latest C++
+version available. Since some practices may be banned in C++17 while they might
+be advised to use in C++14. These rules will be annotated with \cppuntil{14},
+\cppsince{17} or both. This may be applied with any C++ version.
 
 \newpage
 \printbibliography
