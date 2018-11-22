@@ -1,4 +1,4 @@
-## C++ Code Guidelines and Regulations for Safety-Critical C++ for Embedded Systems
+## C++ Code Guidelines and Regulations
 Safety-Critical C++ for Embedded Systems
 
 ### Dependencies
