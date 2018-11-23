@@ -22,6 +22,7 @@
 
 \newcommand{\cppuntil}[1]{\footnotesize\textit{(until C++#1)}\normalsize}
 \newcommand{\cppsince}[1]{\footnotesize\textit{(since C++#1)}\normalsize}
+\newcommand{\requirementpriority}[1]{\emph{Required-Level #1}}
 
 \title{
       C++ Code Guidelines and Regulations \\
@@ -56,7 +57,34 @@ and reference for C++ programmers in \textit{Wiebe and Julian Engineering Co.}
 to achieve sane and safe C++ programs.
 
 Many C++ programming aspects are evaluated in this document, included but not
-limited by: readability, maintainability, portability, efficiency and security.
+limited by: readability, maintainability, portability, efficiency and security. \\
+C++ code using the hwstl guidelines is also referred to as \textit{hwstl C++}.
+Said C++ code is meant to be conform to all rules that are per definition
+\requirementpriority{0} \\
+The following topics will be covered in the C++ Code Guidelines and regulations
+for Safety-Critical C++ for embedded sytems:
+\begin{enumerate}
+   \item Using the C++ standard in embedded systems,
+   \item writing sane and safe C++ code, and
+   \item following design goals for well written production code.
+\end{enumerate}
+\subsection{Requirement Levels}
+Each formulation of a rule has an associated requirement priority, the
+following priorities are formulated:
+\begin{enumerate}
+   \item \requirementpriority{0}: every rule with this priority is mandated to
+be followed by all \textit{hwstl C++}.
+   \item \requirementpriority{1}: all \textit{hwstl C++} made by \textit{Wiebe
+and Julian Engineering Co.} is mandated to follow this rule. Exceptions can
+only be made after inquiring a lead engineer.
+   \item \requirementpriority{2}: it is advised to follow rules with this
+priority level. Cases where it might be better to not follow the rule are not
+required to be rapported.
+\end{enumerate}
+
+\subsection{Credility}
+Thoughout this document, authors and books are referenced to support the
+underlying guideline, in order to maintain credibility.
 \newpage
 \section{C++ Code Guidelines and Regulations}
 \subsection{Reading Guide}
@@ -65,9 +93,6 @@ interpreted. There are a couple of keywords that denote the urgency of
 following a requirement. Such as:
 \bigbreak
 \textbf{Test:} Hello world
-\subsection{Credility}
-Thoughout this document, authors and books are referenced to support the
-underlying guideline, in order to maintain credibility.
 \subsubsection{C++ Versioning}
 This guide takes modern C++ as of C++17 into account for coding practices. But
 some platforms may not have any compilers with support for the latest C++
