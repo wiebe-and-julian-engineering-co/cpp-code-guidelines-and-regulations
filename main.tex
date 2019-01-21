@@ -35,6 +35,23 @@
 \newcommand{\cppsince}[1]{\footnotesize\textit{(since C++#1)}\normalsize}
 \newcommand{\requirementpriority}[1]{\emph{Required-Level #1}}
 
+
+\newcounter{coderulecounter}
+
+\newenvironment{coderule}{%
+\begin{samepage}%
+\refstepcounter{coderulecounter}%
+\newcommand{\rulename}[2]{%
+\addcontentsline{toc}{subsubsection}{Rule \thecoderulecounter: ##1 - \emph{##2}}%
+\subsection*{Rule \thecoderulecounter: ##1 - \emph{##2}}%
+}%
+\newcommand{\rationale}{\subsubsection*{Rationale}}%
+\newcommand{\alternatives}{\subsubsection*{Alternatives}}%
+}{%
+\end{samepage}%
+\bigbreak\bigbreak%
+}
+
 \title{
       C++ Code Guidelines and Regulations \\
       \begin{large}
@@ -95,10 +112,33 @@ priority level. Cases where it might be better to not follow the rule are not
 required to be rapported.
 \end{enumerate}
 
-\subsection{Credility}
-Thoughout this document, authors and books are referenced to support the
-underlying guideline, in order to maintain credibility.
-\newpage
+\pagebreak
+\subsection{Guideline Formulation Rationale}
+\subsubsection{Functional Safety}
+Functional safety is evaluated using Peter Sommerlad's model of safety and
+sanety.\cite{SANE_AND_SAFE_CPP_CLASSES} It is an informal representation of
+segmenting structs and functions into their respective categories in terms of
+memory safety and sanity.
+
+<insert-chart>
+
+The guidelines will try to maintain sanity and safety throughout the guides as
+much as possible. Rules are classified by the following categories:
+
+\begin{enumerate}
+   \item \emph{Sane:} it is a sensible thing to use, it is clear what the
+   desired behavior is;
+   \item \emph{Safe:} it is a safe thing to use, it is highly unlikely to cause
+   system instability;
+   \item \emph{High-discipline:} when strict rules are not abided when
+   programming, system instability is likely;
+   \item \emph{Ill-advised:} it is ill-advised to write, it is most definitely
+   unclear what the desired behavior is;
+   \item \emph{Dangerous:} little programming errors can cause immediate system
+   instability
+\end{enumerate}
+
+\pagebreak
 \section{C++ Code Guidelines and Regulations}
 \subsection{Reading Guide}
 This section describes how the guides and regulations should be read and
@@ -106,17 +146,186 @@ interpreted. There are a couple of keywords that denote the urgency of
 following a requirement. Such as:
 \bigbreak
 \textbf{Test:} Hello world
-\subsubsection{C++ Versioning}
-This guide takes modern C++ as of C++17 into account for coding practices. But
-some platforms may not have any compilers with support for the latest C++
-version available. Since some practices may be banned in C++17 while they might
-be advised to use in C++14. These rules will be annotated with \cppuntil{14},
-\cppsince{17} or both. This may be applied with any C++ version.
+\subsubsection{C++ Standards}
+This guide takes modern C++ as of C++17 into account for coding practices.
+However, a platform may not have any compilers available with support for the
+latest C++ standard. Some practices may be banned in C++17 but are advised to
+use in C++14 or earlier standards, rules describing practices that are not
+supported by different versions are annotated with \cppuntil{14} or
+\cppsince{17} targs. These tags can contain any C++ standard and pre-C++11
+annotations may be omitted due to assumed availability of newer standards on a
+given platform.
 
-\newpage
+\pagebreak
+\section{Hwstl Rules}
+This section describes all the rules that are required to be followed to write
+hwstl conform C++ code. Different levels of conformity are available, see
+INSERT\_REFERENCE\_TO\_CONFORMITY\_LEVELS
+
+\subsection{Variable naming}
+\subsubsection{Template paramters}
+\begin{coderule}
+\rulename{Template parameter name prefix}{Sane and safe}
+Template parameter names must be prefixed with \lstinline{t_} for singular types
+and values or \lstinline{vt_} for variadic template parameters.
+
+Example:
+
+\begin{lstlisting}
+template <class t_value>
+struct compilation_constant {
+   using value = t_value;
+};
+
+template <class... vt_values>
+struct compilation_constant_sequence {
+   void apply() {
+      std::array a = { vt_values... };
+
+      // use a in this context
+   }
+};
+\end{lstlisting}
+
+\rationale
+It is often a convention to write templates with only uppercase characters. But
+this does not make the distinction between preprocessor macros. Also types,
+values and variable length parameters have distinct behavior. By writing
+\lstinline{t_} it is clearly expressed that the parameter in question is a
+template constant.
+
+Because of often unorthodox usages of templates, it is required to be more
+expressive where variadic parameters, prefixed with \lstinline{vt_} are used.
+Since variadic template parameters can be expanded in various different manners,
+using, for example, fold expressions \cppsince{17}, it may not be obvious what
+argument is expanded.
+
+\end{coderule}
+
+\subsection{Pointer Semantics}
+
+\begin{coderule}
+\rulename{Smart Pointer Input Parameters}{High-Discipline}
+Usage of rvalue reference input parameters is considered \emph{High-discipline}.
+An example snippet in question goes as following:
+\begin{lstlisting}
+/**
+ * Tries to claim moved, may fail to claim which will return
+ * a nullptr
+ */
+template <class T>
+hwstl::observer_ptr<T> Claim(std::unique_ptr<T>&& moved) {
+   if (can_claim) {
+      my_internal_ptr = moved;
+      // Tell the caller that Claim was successful. An observer
+      // is returned.
+      return hwstl::make_observer<T>(MyInternalPtr.get());
+   } else {
+      // Tell the caller that Claim has failed, the unique_ptr
+      // which was meant to be claimed is not claimed. But not
+      // destructed either.
+      return nullptr;
+   }
+}
+\end{lstlisting}
+It must be noted that the above code uses an rvalue reference to claim
+ownership, so it does not destruct the claimed ptr. Which clearly differentiates
+from a function with the signature \begin{lstlisting}
+hwstl::observer_ptr<T> Claim(std::unique_ptr<T> moved)
+\end{lstlisting} which destructs moved when a failure occured.
+
+\rationale
+None
+
+\alternatives
+The usage of \lstinline{unique_ptr} and \lstinline{shared_ptr} is advised for
+the appropriate use cases. When using hwstl, \lstinline{hwstl::shared_ptr} is
+available, which is advised to use for small embedded devices.
+\end{coderule}
+
+\begin{coderule}
+\rulename{Owning Raw Pointers}{Dangerous}
+Usage of owning raw pointers is considered \emph{Dangerous}
+
+\rationale
+Owning raw pointers cuickly leave uncleared memory resources what during
+extended periods of operation cause system instability.
+
+\alternatives
+The usage of \lstinline{unique_ptr} and \lstinline{shared_ptr} is advised for
+the appropriate use cases. When using hwstl, \lstinline{hwstl::shared_ptr} is
+available, which is advised to use for small embedded devices.
+\end{coderule}
+
+\begin{coderule}
+\rulename{Non-Owning Raw Pointers}{Ill-advised}
+The usage of non-owning raw pointers is considered \emph{Ill-advised}
+
+\rationale
+Non-owning raw pointers are unclear when used in isolated context.
+
+\alternatives
+\begin{enumerate}
+\item When a pointer does not manage any resources, but is nullable
+\lstinline{hwstl::observer_ptr} is required to use.
+\item When a pointer is not nullable a reference is required to use.
+\end{enumerate}
+\end{coderule}
+
+\pagebreak
+\section{Bitfields}
+\begin{coderule}
+\rulename{Signed Bit Fields}{Dangerous}
+Signed bit fields are banned, unless they are required to represent a negative
+value and contain $> 1$ bits.
+
+\rationale
+\begin{figure}[h]
+\begin{lstlisting}
+struct BitFlags {
+  BitFlags(int x, int y, int z) : x(x), y(y), z(z) { }
+  int x : 1;
+  int y : 1;
+  int z : 1;
+};
+
+int main() {
+  auto flags = BitFlags(1, 0, 1);
+
+  // The following statement prints -1, due to signedness, 
+  // while it may not be expected. This leads to hard to spot
+  // errors. 
+  std::cout << flags.x << std::endl;
+}
+\end{lstlisting}
+\caption{Dangerous Signed Bitfields}
+\label{fig:DANGEROUS_SIGNED_BITFIEDS}
+\end{figure}
+
+In figure \ref{fig:DANGEROUS_SIGNED_BITFIEDS} it is expressed how signed single
+bit bitfields can cause logic errors when programming. This is unexpected
+because constructing a bitfield \lstinline{int x : 1;} with \lstinline{x(1)},
+the logical 1 is implicitly casted to -1. Due to this unexpected behavior signed
+bitfields are in general ill-advised and in the case of 1 bit signed bitfields
+it is simply dangerous.
+
+\alternatives
+\begin{enumerate}
+\item Using \lstinline{unsigned}, \lstinline{unsigned int} or any unsigned type in
+favor of signed types is preferred.
+\item In the case of 1-bit sized bit-fields, a boolean is preferred, for the
+sake of expressiveness: \lstinline{bool x : 1}.
+\end{enumerate}
+
+\end{coderule}
+
+\pagebreak
+\section{Commenting Guidelines}
+
+\pagebreak
 \printbibliography
 
-\newpage
+\pagebreak
 \begin{appendix}
    \pagenumbering{gobble}
 \end{appendix}
