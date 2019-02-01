@@ -1,4 +1,4 @@
-**This document is not done and should not be used as a reference for writing safety critical C++ code**
+**This document is not done and should not be used as a reference for writing safety critical C++ code. At the moment it is used to document discoveries during the development of hwstl and is not industry hardened.**
 
 
 
