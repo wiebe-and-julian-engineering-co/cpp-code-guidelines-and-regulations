@@ -1,3 +1,7 @@
+**This document is not done and should not be used as a reference for writing safety critical C++ code**
+
+
+
 ## C++ Code Guidelines and Regulations
 Safety-Critical C++ for Embedded Systems
 
